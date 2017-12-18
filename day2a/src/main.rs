@@ -2,48 +2,37 @@ use std::io::prelude::*;
 use std::env;
 use std::process;
 use std::fs::File;
-use std::collections::BTreeSet;
 
 fn main() {
-    let config: Config = Config::new(env::args()).unwrap_or_else(|err| {
+    let args: Vec<String> = env::args().collect();
+
+    let config: Config = Config::new(&args).unwrap_or_else(|err| {
         println!("Problem parsing arguments: {}", err);
         process::exit(1);
     });
-
+    
     let input = get_input(&config);
-
-    let chksums: Vec<i32> = input
-        .iter()
-        .map(|line| { return line_chksum(&line); })
-        .collect();
-
-    let sum = chksums.iter().sum::<i32>();
-
-    println!("{:?}", sum);
+    
+    let chksums: Vec<i32> = input.iter().map(|line| {
+        return line_chksum(&line);
+    }).collect();
+    
+    println!("Answer: {:?}", chksums.iter().sum::<i32>());
 }
 
-fn line_chksum(line: &Vec<i32>) -> i32 {
-    let mut multiples: BTreeSet<(i32, i32)> = BTreeSet::new();
-    let lrgst = *line.iter().max().unwrap();
-
+fn line_chksum (line: &Vec<i32>) -> i32 {
+    let mut lrgst = 0;
+    let mut smlst = i32::max_value();
+    
     for cell in line.iter() {
-        let mut i = 1;
-
-        while cell * i <= lrgst {
-            i += 1;
-            multiples.insert((*cell, cell * i));
+        if *cell > lrgst {
+            lrgst = *cell
+        } else if *cell < smlst {
+            smlst = *cell
         }
     }
-
-    for cell in line.iter() {
-        for multiple in multiples.iter() {
-            if *cell == multiple.1 {
-                return (multiple.1 / multiple.0) as i32;
-            }
-        }
-    }
-
-    panic!("input should always have a divisible pair");
+    
+    return lrgst - smlst;
 }
 
 fn get_input(config: &Config) -> Vec<Vec<i32>> {
@@ -64,22 +53,21 @@ fn get_input(config: &Config) -> Vec<Vec<i32>> {
             println!("{:?}", why);
         }
     };
-
+    
     let lines: Vec<String> = contents
         .trim()
         .split('\n')
         .map(|x| x.to_string())
         .collect();
-
+        
     let spreadsheet: Vec<Vec<i32>> = lines
         .iter()
-        .map(|line| {
-            return line.split('\t')
-                .map(|x| x.to_string().parse().unwrap())
-                .collect();
-        })
+        .map(|line| line
+            .split('\t')
+            .map(|x| x.to_string().parse().unwrap())
+            .collect())
         .collect();
-
+    
     return spreadsheet;
 }
 
@@ -88,14 +76,12 @@ struct Config {
 }
 
 impl Config {
-    fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+    fn new(args: &[String]) -> Result<Config, &str> {
         if args.len() < 2 {
             return Err("not enough arguments");
         }
 
-        args.next();
-
-        let path = args.next().unwrap();
+        let path = args[1].clone();
 
         return Ok(Config { path });
     }
