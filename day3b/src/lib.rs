@@ -1,6 +1,10 @@
+pub mod position;
+
 use std::collections::HashMap;
 
-pub fn get_pos(index: &i32) -> (i32, i32) {
+use position::Position;
+
+pub fn get_pos(index: &i32) -> Position {
     let mut n: i32 = 1;
     while n.pow(2) < *index {
         n += 2;
@@ -13,7 +17,7 @@ pub fn get_pos(index: &i32) -> (i32, i32) {
     let len = side - 1;
     let mid = layer - 1;
 
-    let xo = match delta {
+    let x_offset = match delta {
         // right
         x if x <= len * 1 => mid,
 
@@ -30,14 +34,14 @@ pub fn get_pos(index: &i32) -> (i32, i32) {
         _ => 0,
     };
 
-    let yo = match delta {
+    let y_offset = match delta {
         // right
         x if x <= len * 1 => delta - mid,
 
         // top
         x if x <= len * 2 => mid,
 
-        // left,
+        // left
         x if x <= len * 3 => mid - (delta - len * 2),
 
         // bottom
@@ -47,39 +51,37 @@ pub fn get_pos(index: &i32) -> (i32, i32) {
         _ => 0,
     };
 
-    return (xo, yo);
-}
-
-pub fn spiral_cell(spiral: &HashMap<(i32, i32), i32>, pos: &(i32, i32)) -> i32 {
-    let v = match spiral.get(&pos) {
-        Some(v) => *v,
-        None => 0,
+    return Position {
+        x: x_offset,
+        y: y_offset,
     };
-    
-    return v;
 }
 
-pub fn sum_perimeter(spiral: &HashMap<(i32, i32), i32>, index: &i32) -> i32 {
-    let mut tot = 0;
-    let c = get_pos(&index);
-    
-    let dirs = [
-        (1, 0),
-        (1, 1),
-        (0, 1),
-        (-1, 1),
-        (-1, 0),
-        (-1, -1),
-        (0, -1),
-        (1, -1)
+pub fn sum_perimeter(spiral: &HashMap<Position, i32>, center: &Position) -> i32 {
+    let dirs: Vec<Position> = vec![
+        Position::new(1, 0),
+        Position::new(1, 1),
+        Position::new(0, 1),
+        Position::new(-1, 1),
+        Position::new(-1, 0),
+        Position::new(-1, -1),
+        Position::new(0, -1),
+        Position::new(1, -1),
     ];
-    
-    for dir in dirs.iter() {
-        let pos = (c.0 + dir.0, c.1 + dir.1);
-        let sum = spiral_cell(&spiral, &pos);
-        
-        tot += sum;
-    }
-    
-    return tot;
+
+    let total = dirs
+        .into_iter()
+        .map(|offset| {
+            let pos = center + offset;
+
+            let val: &i32 = match spiral.get(&pos) {
+                Some(v) => v,
+                None => &0,
+            };
+
+            return val;
+        })
+        .sum();
+
+    return total;
 }
