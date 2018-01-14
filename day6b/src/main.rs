@@ -39,7 +39,7 @@ fn main() {
     println!("Set length: {:?}", banks_set.len());
     
     let cycle_start_banks = banks_vec.as_slice().last().unwrap();
-    let cycle_start_pos = banks_vec.iter().position(|n| n == cycle_start_banks).unwrap();;
+    let cycle_start_pos = banks_vec.iter().position(|n| n == cycle_start_banks).unwrap();
     
     // -1 because .len() and not last element index
     let answer = banks_vec.len() - cycle_start_pos - 1;
