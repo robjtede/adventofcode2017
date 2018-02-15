@@ -24,5 +24,5 @@ fn main() {
     let tree = build_tree(root, &programs);
     
     &tree.check_balance();
-    println!("See above. Answer unbalanced program weight minus total weight different.");
+    println!("See above. Answer unbalanced program weight minus total weight difference.");
 }
